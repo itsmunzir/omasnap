@@ -7,6 +7,9 @@ earlier development is recorded in the [commit history](https://github.com/omaco
 
 ### Added
 
+- Hold `Ctrl` while dragging with Cut (`X`) to insert a transparent band.
+  Annotations shift with the image, and insertion supports undo and redo.
+
 - `Tab` cycles region selection between free, square, 3:4, and 16:9 while
   capturing; `Shift+Tab` cycles back. The capture guide shows the active aspect.
 
