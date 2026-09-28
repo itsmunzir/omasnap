@@ -65,6 +65,13 @@ earlier development is recorded in the [commit history](https://github.com/omaco
 - Run OCR's tesseract on one thread. Its OpenMP pool spun on every core and
   made text grabs slower, not faster: a full-screen read drops from about
   1.7 s to 1.0 s with a third of the CPU time, and reads the same text.
+- Keep the annotation editor from enlarging a capture past the pixels it
+  carries. A screen whose device ratio is higher than the document's own
+  density — a fractional-scale monitor whose surface ratio Qt still reports
+  rounded up, or a capture taken on a coarser monitor and edited on a finer
+  one — used to stretch the selection into a soft, low-resolution-looking
+  preview while Copy/Save kept every native pixel. The frame now stops at one
+  device pixel per document pixel and exports are unchanged.
 - Retain logical display dimensions inside exported PNGs, so captures from
   scaled monitors reopen at the correct size from Omaroll, files, or the
   clipboard without downsampling or slowing the fast PNG encoder.
