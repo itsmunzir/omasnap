@@ -12203,6 +12203,33 @@ int main(int argc, char **argv) {
     return runInstanceLockHolder(heldLockPath);
 
   QApplication application(argc, argv);
+  QCommandLineParser parser;
+  parser.setApplicationDescription(QStringLiteral("Omasnap headless smoke checks"));
+  parser.addHelpOption();
+  const QCommandLineOption outputDirectoryOption(
+      QStringLiteral("output-dir"),
+      QStringLiteral("Write test artifacts here (default: smoke-output beside the executable)."),
+      QStringLiteral("directory"));
+  const QCommandLineOption outputChecksOption(
+      QStringLiteral("output-checks"), QStringLiteral("Run only output checks."));
+  parser.addOption(outputDirectoryOption);
+  parser.addOption(outputChecksOption);
+  parser.process(application);
+  if (!parser.positionalArguments().isEmpty()) {
+    qCritical("Unexpected positional argument; use --output-dir <directory>.");
+    return EXIT_FAILURE;
+  }
+  const QString outputDirectory =
+      parser.isSet(outputDirectoryOption)
+          ? parser.value(outputDirectoryOption)
+          : QDir(QCoreApplication::applicationDirPath())
+                .filePath(QStringLiteral("smoke-output"));
+  if (outputDirectory.isEmpty() || !QDir().mkpath(outputDirectory)) {
+    qCritical().noquote() << "Could not create smoke output directory:" << outputDirectory;
+    return EXIT_FAILURE;
+  }
+  const QString outputRoot =
+      QDir(outputDirectory).absoluteFilePath(QStringLiteral("capture"));
   QApplication::setFont(chromeDefaultFont()); // as main() does
   if (!loadCaptureFonts())
     return 17;
@@ -12259,16 +12286,12 @@ int main(int argc, char **argv) {
                                .arg(frame.height())
                                .arg(stopwatch.elapsed());
     }
-    const QString liveRoot =
-        argc > 1 ? QString::fromLocal8Bit(argv[1])
-                 : QDir(QDir::tempPath())
-                       .filePath(QStringLiteral("omasnap-native-smoke"));
-    if (!frame.save(liveRoot + QStringLiteral("-native-output.png"), "PNG"))
+    if (!frame.save(outputRoot + QStringLiteral("-native-output.png"), "PNG"))
       return 105;
     return 0;
   }
   QString snapshotError;
-  if (argc > 1 && QString::fromLocal8Bit(argv[1]) == QStringLiteral("--output-checks")) {
+  if (parser.isSet(outputChecksOption)) {
     if (!runQuickOutputChecks(snapshotError) ||
         !runPostCaptureChecks(snapshotError, false) ||
         !runPostCaptureChecks(snapshotError, true) ||
@@ -12798,10 +12821,6 @@ int main(int argc, char **argv) {
     qWarning().noquote() << snapshotError;
     return 125;
   }
-  const QString outputRoot =
-      argc > 1 ? QString::fromLocal8Bit(argv[1])
-               : QDir(QDir::tempPath())
-                     .filePath(QStringLiteral("omasnap-native-smoke"));
   if (!runBackdropPreviewMatchesExport(application, outputRoot, snapshotError)) {
     qWarning().noquote() << snapshotError;
     return 214;
@@ -12812,7 +12831,7 @@ int main(int argc, char **argv) {
   }
   const QString snapshotPath = temporarySnapshotPath();
   QFile::remove(snapshotPath);
-  const QString savedRoot = QDir(outputRoot).filePath(QStringLiteral("saved"));
+  const QString savedRoot = QDir(outputDirectory).absoluteFilePath(QStringLiteral("saved"));
   QDir(savedRoot).removeRecursively();
   qputenv("OMASNAP_SCREENSHOT_DIR", savedRoot.toUtf8());
 
@@ -13863,11 +13882,11 @@ int main(int argc, char **argv) {
     QTest::keyClick(&finishEditor, Qt::Key_S, Qt::ControlModifier);
     finishEditor.waitForExport();
     const QStringList savedFiles =
-        QDir(QDir(outputRoot).filePath(QStringLiteral("saved")))
+        QDir(QDir(outputDirectory).absoluteFilePath(QStringLiteral("saved")))
             .entryList({QStringLiteral("*.png")}, QDir::Files);
     if (finishEditor.isVisible() || savedFiles.size() != 1)
       return 60;
-    savedPath = QDir(QDir(outputRoot).filePath(QStringLiteral("saved")))
+    savedPath = QDir(QDir(outputDirectory).absoluteFilePath(QStringLiteral("saved")))
                     .filePath(savedFiles.constFirst());
     if (QImage(savedPath).convertToFormat(QImage::Format_ARGB32) !=
             snapshotBeforeSave ||

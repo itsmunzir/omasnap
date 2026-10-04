@@ -119,6 +119,11 @@ tools and source types are available. Use `make build` for a build-only pass,
 `make smoke` for the behavioral smoke suite, and `make install` to install to
 `~/.local`.
 
+Smoke artifacts belong in `build/smoke-output/` (or `smoke-output/` beside a
+custom build's executable). Direct smoke runs use that default too; use
+`--output-dir <directory>` for an explicit alternative. Keep generated test
+screenshots and other debugging artifacts out of the repository root.
+
 Always run `make check` after behavioral changes. CI
 (`.github/workflows/build-linux.yml`) runs the same build and smoke on every
 push and PR.

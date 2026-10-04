@@ -638,6 +638,12 @@ original source frame.
 make check
 ```
 
+Smoke screenshots, fixtures, and saved captures go in `build/smoke-output/`,
+including when the executable is launched directly from the repository root.
+For a custom build directory, output lives in `smoke-output/` beside the executable.
+Use `--output-dir <directory>` to choose another artifact directory; positional
+paths and unknown flags are rejected.
+
 The smoke executable exercises smart/region/window/fullscreen startup modes, capture selection,
 working-document persistence (source plus op-log JSON), annotation tools, undo/redo
 replay, vector movement and scaling, text editing, OCR, native-DPI output,

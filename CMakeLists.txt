@@ -210,7 +210,7 @@ target_include_directories(omasnap-smoke PRIVATE
 target_compile_options(omasnap-smoke PRIVATE -Wall -Wextra -Wpedantic)
 target_link_libraries(omasnap-smoke PRIVATE omasnap-core Qt6::Test)
 target_precompile_headers(omasnap-smoke REUSE_FROM omasnap-core)
-add_test(NAME omasnap-smoke COMMAND omasnap-smoke "${CMAKE_CURRENT_BINARY_DIR}/omasnap-smoke-output")
+add_test(NAME omasnap-smoke COMMAND omasnap-smoke)
 set_tests_properties(omasnap-smoke PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 endif()
 
